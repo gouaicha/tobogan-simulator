@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Simulateur de Tuyaux</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
+  </head>
+  <body class="bg-gray-50 text-gray-800">
+    <div id="root" class="p-6"></div>
+
+    <script type="text/babel">
+      const { useState } = React;
+      const TYPES = ["I", "Z", "X"];
+
+      const Cell = ({ value, disabled, onClick, hideLabel }) => {
+        const baseStyle = "w-12 h-12 border rounded text-xl font-bold shadow";
+        const colorStyle = value === "I" ? "bg-blue-200" : value === "Z" ? "bg-orange-200" : value === "X" ? "bg-purple-200" : "";
+        const disabledStyle = disabled ? "bg-gray-300 cursor-not-allowed" : "hover:bg-opacity-80";
+        return (
+          <button
+            onClick={onClick}
+            disabled={disabled}
+            className={`${baseStyle} ${colorStyle} ${disabledStyle}`}
+          >
+            {hideLabel ? "" : value}
+          </button>
+        );
+      };
+
+      const parseFractionOrFloat = (text) => {
+        if (typeof text !== "string") return NaN;
+        const cleaned = text.replace(',', '.').trim();
+        if (!/^[-+]?\\d*(\\.\\d+)?$/.test(cleaned)) return NaN;
+        const parsed = parseFloat(cleaned);
+        return isNaN(parsed) ? NaN : parsed;
+      };
+
+      const InputLayer = ({ inputs, onChange }) => (
+        <div className="flex gap-1">
+          {inputs.map((val, idx) => (
+            <input
+              key={idx}
+              type="text"
+              inputMode="decimal"
+              pattern="[0-9.,-]*"
+              value={val}
+              onChange={(e) => onChange(idx, parseFractionOrFloat(e.target.value))}
+              className="w-12 h-12 border rounded text-center font-bold"
+            />
+          ))}
+        </div>
+      );
+
+      function App() {
+        const [inputs, setInputs] = useState(["3,14", "2.5", "-1.75"]);
+        return (
+          <div className="space-y-4">
+            <h1 className="text-2xl font-bold">Aperçu : Entrée de valeurs à virgule</h1>
+            <InputLayer
+              inputs={inputs}
+              onChange={(idx, value) => {
+                const copy = [...inputs];
+                copy[idx] = value;
+                setInputs(copy);
+              }}
+            />
+            <p className="text-sm text-gray-600">Les valeurs internes : {JSON.stringify
